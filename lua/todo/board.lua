@@ -3,7 +3,7 @@ local fn   = vim.fn
 local fmt  = string.format
 local card = require("todo.card")
 
-local M    = {}
+local M    = { config = {} }
 
 local function slugify(title)
     return title:lower()
@@ -11,9 +11,9 @@ local function slugify(title)
         :gsub("[^%w%-]", "")
 end
 
-
 local function load_global_config()
-    local cfg_file = vim.fn.stdpath("config") .. "/nvim_todo/config.lua"
+    local cfg_file = vim.fn.stdpath("data") .. "/nvim_todo/config.lua"
+    print(cfg_file)
     if vim.fn.filereadable(cfg_file) == 1 then
         local chunk, err = loadfile(cfg_file)
         if not chunk then
@@ -34,6 +34,7 @@ end
 
 local function load_board_config(board_path)
     local cfg_file = board_path .. "/config.lua"
+    print(cfg_file)
 
     if fn.filereadable(cfg_file) == 1 then
         local chunk, err = loadfile(cfg_file)
@@ -79,15 +80,12 @@ function M.completefunc(findstart, base)
         while start > 0 and line:sub(start, start):match("[%w@#+%[%]-]") do
             start = start - 1
         end
-        return start
+        return start + 1
     else
         local line = vim.fn.getline(".")
         local col = vim.fn.col(".") - 1
         local trigger = line:sub(col, col)
-        local board_name = vim.fn.expand("%:t:r")
-        local global_config = load_global_config()
-        local board_config = load_board_config(board_name)
-        local config = merge_configs(global_config, board_config)
+        local config = M.config
 
         if not config or not config.triggers or not config.triggers[trigger] then
             return {}
@@ -97,7 +95,11 @@ function M.completefunc(findstart, base)
         local matches = {}
         for label, func in pairs(options) do
             if label:match("^" .. vim.pesc(base)) then
-                table.insert(matches, label)
+                table.insert(matches, {
+                    word = func(),
+                    abbr = label,
+                    menu = "[nvim_todo]"
+                })
             end
         end
         return matches
@@ -113,10 +115,16 @@ function M.open_card_config()
         return vim.notify("Not on a card header (### …)", vim.log.levels.WARN)
     end
 
-    local board_name = fn.expand("%:t:r")
-    local slug       = slugify(title)
-    local cfg_dir    = fn.stdpath("data") .. "/nvim_todo/boards/" .. board_name
-    local cfg_file   = fmt("%s/%s.md", cfg_dir, slug)
+    local board_name    = fn.expand("%:t:r")
+    local slug          = slugify(title)
+    local cfg_dir       = fn.stdpath("data") .. "/nvim_todo/boards/" .. board_name
+    local cfg_file      = fmt("%s/%s.md", cfg_dir, slug)
+
+    local global_config = load_global_config()
+    local board_config  = load_board_config(cfg_dir)
+    local config        = merge_configs(global_config, board_config)
+    vim.print(global_config, board_config, config)
+    M.config = config
 
     if fn.isdirectory(cfg_dir) == 0 then
         fn.mkdir(cfg_dir, "p")
