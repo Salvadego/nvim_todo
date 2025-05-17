@@ -1,20 +1,37 @@
 local autocmd = vim.api.nvim_create_autocmd
 local autogrp = vim.api.nvim_create_augroup
-local uv      = vim.loop
-local fn      = vim.fn
 
 local board   = require("todo.board")
 local M       = {}
 
 function M.setup(opts)
-    local cfg_dir    = fn.stdpath("data") .. "/nvim_todo"
-    local boards_dir = cfg_dir .. "/boards/"
-    local directory  = tonumber(644, 8)
-    if directory == nil then return end
+    vim.api.nvim_create_user_command("BoardConfig", function()
+        local board_name = vim.fn.expand("%:t:r")
+        local cfg_dir = vim.fn.stdpath("data") .. "/nvim_todo/boards/" .. board_name
+        local cfg_file = cfg_dir .. "/config.lua"
 
-    uv.fs_mkdir(cfg_dir, directory)
-    uv.fs_mkdir(boards_dir, directory)
-    -- vim.print(opts)
+        if vim.fn.isdirectory(cfg_dir) == 0 then
+            vim.fn.mkdir(cfg_dir, "p")
+        end
+
+        if vim.fn.filereadable(cfg_file) == 0 then
+            local default_config = {
+                "return {",
+                "  triggers = {",
+                "    [\"@\"] = function(base)",
+                "      return {",
+                "        today = function() return os.date(\"%Y-%m-%d\") end,",
+                "        tomorrow = function() return os.date(\"%Y-%m-%d\", os.time() + 86400) end,",
+                "      }",
+                "    end,",
+                "  },",
+                "}",
+            }
+            vim.fn.writefile(default_config, cfg_file)
+        end
+
+        vim.cmd("edit " .. cfg_file)
+    end, {})
 end
 
 autocmd({ 'BufRead', 'BufNewFile' }, {
