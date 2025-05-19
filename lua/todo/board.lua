@@ -89,12 +89,25 @@ function M.completefunc(findstart, base)
             return {}
         end
 
-        local options = config.triggers[trigger](base)
+        local trigger_def = config.triggers[trigger]
+        local options
+
+        if type(trigger_def) == "function" then
+            options = trigger_def(base)
+        else
+            options = trigger_def
+        end
+
         local matches = {}
         for label, func in pairs(options) do
+            if type(label) == "number" and type(func) == "string" then
+                label = func
+                func = func
+            end
+
             if label:match("^" .. vim.pesc(base)) then
                 local item = {
-                    word = type(func) == "function" and func() or label,
+                    word = type(func) == "function" and func() or func,
                     menu = "[nvim_todo]"
                 }
                 if type(func) == "function" then
