@@ -93,11 +93,14 @@ function M.completefunc(findstart, base)
         local matches = {}
         for label, func in pairs(options) do
             if label:match("^" .. vim.pesc(base)) then
-                table.insert(matches, {
-                    word = func(),
-                    abbr = label,
+                local item = {
+                    word = type(func) == "function" and func() or label,
                     menu = "[nvim_todo]"
-                })
+                }
+                if type(func) == "function" then
+                    item.abbr = label
+                end
+                table.insert(matches, item)
             end
         end
         return matches
@@ -121,7 +124,7 @@ function M.open_card_config()
     local global_config = load_global_config()
     local board_config  = load_board_config(cfg_dir)
     local config        = merge_configs(global_config, board_config)
-    M.config = config
+    M.config            = config
 
     if fn.isdirectory(cfg_dir) == 0 then
         fn.mkdir(cfg_dir, "p")
