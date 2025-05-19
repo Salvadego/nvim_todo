@@ -35,6 +35,7 @@ function M.setup(opts)
 end
 
 autocmd({ 'BufRead', 'BufNewFile' }, {
+    pattern = '*.board.md',
     group = autogrp("BoardFiletype", { clear = true }),
     callback = function()
         M.attach_mappings()

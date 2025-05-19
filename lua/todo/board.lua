@@ -110,9 +110,9 @@ function M.open_card_config()
     local win   = api.nvim_get_current_win()
     local row   = select(1, unpack(api.nvim_win_get_cursor(win)))
     local line  = api.nvim_buf_get_lines(api.nvim_get_current_buf(), row - 1, row, false)[1]
-    local title = line:match("^###%s*(.+)")
+    local title = line:match("^-%s*(.+)")
     if not title then
-        return vim.notify("Not on a card header (### …)", vim.log.levels.WARN)
+        return vim.notify("Not on a card header (- …)", vim.log.levels.WARN)
     end
 
     local board_name    = fn.expand("%:t:r")
@@ -156,7 +156,7 @@ function M.open_card_config()
 
     local card_data = card.parse_card_markdown(cfg_file)
 
-    api.nvim_command("rightbelow vsplit " .. fn.fnameescape(cfg_file))
+    api.nvim_command("rightbelow split " .. fn.fnameescape(cfg_file))
 
     api.nvim_buf_set_var(0, "card_meta", card_data.meta)
     api.nvim_buf_set_var(0, "card_description", card_data.description)

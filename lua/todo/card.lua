@@ -1,7 +1,7 @@
 local map   = vim.keymap.set
 local opts  = { buffer = 0, noremap = true, silent = true }
 
-local lyaml = require("lyaml")
+-- local lyaml = require("lyaml")
 
 local M     = {}
 
@@ -40,11 +40,11 @@ function M.parse_card_markdown(path)
         table.insert(body_lines, lines[j])
     end
 
-    local meta = {}
-    if #fm_lines > 0 then
-        local fm_text = table.concat(fm_lines, "\n")
-        meta = lyaml.load(fm_text)
-    end
+    -- local meta = {}
+    -- if #fm_lines > 0 then
+    --     local fm_text = table.concat(fm_lines, "\n")
+    --     meta = lyaml.load(fm_text)
+    -- end
 
     local section = nil
     local text_acc = {}
@@ -92,7 +92,7 @@ function M.parse_card_markdown(path)
     finish_section()
 
     return {
-        meta        = meta,
+        -- meta        = meta,
         description = descr,
         checklists  = checklists,
         attachments = attachments,
