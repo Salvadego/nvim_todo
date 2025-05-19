@@ -13,7 +13,6 @@ end
 
 local function load_global_config()
     local cfg_file = vim.fn.stdpath("data") .. "/nvim_todo/config.lua"
-    print(cfg_file)
     if vim.fn.filereadable(cfg_file) == 1 then
         local chunk, err = loadfile(cfg_file)
         if not chunk then
@@ -34,7 +33,6 @@ end
 
 local function load_board_config(board_path)
     local cfg_file = board_path .. "/config.lua"
-    print(cfg_file)
 
     if fn.filereadable(cfg_file) == 1 then
         local chunk, err = loadfile(cfg_file)
@@ -123,7 +121,6 @@ function M.open_card_config()
     local global_config = load_global_config()
     local board_config  = load_board_config(cfg_dir)
     local config        = merge_configs(global_config, board_config)
-    vim.print(global_config, board_config, config)
     M.config = config
 
     if fn.isdirectory(cfg_dir) == 0 then
